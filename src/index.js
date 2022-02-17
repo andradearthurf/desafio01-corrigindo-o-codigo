@@ -23,20 +23,28 @@ app.post("/repositories", (request, response) => {
     likes: 0
   };
 
-  return response.json(repository);
+  repositories.push(repository);
+
+  return response.status(201).json(repository);
 });
 
 app.put("/repositories/:id", (request, response) => {
   const { id } = request.params;
-  const updatedRepository = request.body;
+  const { title, url, techs } = request.body; // objeto completo
 
-  repositoryIndex = repositories.findindex(repository => repository.id === id);
+  repositoryIndex = repositories.findIndex(repository => repository.id === id);
 
-  if (repositoryIndex < 0) {
+  if (repositoryIndex == -1) {
     return response.status(404).json({ error: "Repository not found" });
   }
 
-  const repository = { ...repositories[repositoryIndex], ...updatedRepository };
+  // tudo que está no id repository em repositories será modificado (sobrescrito) pelo input do
+  // usuário em updateRepository.
+  // const repository = { ...repositories[repositoryIndex], ...updatedRepository }; // objeto
+
+  const likes = repositories[repositoryIndex].likes;
+
+  const repository = {id, title, url, techs, likes};
 
   repositories[repositoryIndex] = repository;
 
@@ -48,7 +56,7 @@ app.delete("/repositories/:id", (request, response) => {
 
   repositoryIndex = repositories.findIndex(repository => repository.id === id);
 
-  if (repositoryIndex > 0) {
+  if (repositoryIndex == -1) {
     return response.status(404).json({ error: "Repository not found" });
   }
 
@@ -60,15 +68,16 @@ app.delete("/repositories/:id", (request, response) => {
 app.post("/repositories/:id/like", (request, response) => {
   const { id } = request.params;
 
-  repositoryIndex = repositories.findIndex(repository => repository.id === id);
+  // busca se o id passado como parâmetro existe.
+  const repositoryIndex = repositories.find(repository => repository.id === id);
 
-  if (repositoryIndex < 0) {
+  if (!repositoryIndex) {
     return response.status(404).json({ error: "Repository not found" });
   }
 
-  const likes = ++repositories[repositoryIndex].likes;
+  ++repositoryIndex.likes; // incrementa o número de likes pelo id buscado
 
-  return response.json('likes');
+  return response.json(repositoryIndex);
 });
 
 module.exports = app;
